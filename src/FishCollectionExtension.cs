@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
@@ -273,20 +273,18 @@ namespace System
 		/// <returns>返回要查找的对象</returns>
 		public static TValue GetValue<Tkey, TValue>(this Dictionary<Tkey, TValue> dic, Tkey key, Func<Tkey, TValue> initialValueFunc)
 		{
-			if (dic.ContainsKey(key))
-				return dic[key];
+			TValue value;
 
-			var value = default(TValue);
-			if (initialValueFunc == null)
-				return default(TValue);
-
-			lock (dic)
+			if (!dic.TryGetValue(key, out value) && initialValueFunc != null)
 			{
-				if (!dic.ContainsKey(key))
-					dic.Add(key, value = initialValueFunc(key));
+				lock (dic)
+				{
+					if (!dic.TryGetValue(key, out value))
+						dic.Add(key, value = initialValueFunc(key));
+				}
 			}
 
-			return dic[key];
+			return value;
 		}
 
 		/// <summary>
@@ -434,7 +432,7 @@ namespace System
 		/// <typeparam name="T">可枚举类型</typeparam>
 		/// <param name="source">源</param>
 		/// <returns></returns>
-		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+		public static HashSet<T> MapToHashSet<T>(this IEnumerable<T> source)
 		{
 			return new HashSet<T>(source);
 		}
@@ -446,7 +444,7 @@ namespace System
 		/// <param name="source">源</param>
 		/// <param name="comparer">要使用的比较器</param>
 		/// <returns><see cref="T:System.Collections.Generic.HashSet{T}"/></returns>
-		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer)
+		public static HashSet<T> MapToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer)
 		{
 			return new HashSet<T>(source, comparer);
 		}

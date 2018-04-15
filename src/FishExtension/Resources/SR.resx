@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -163,5 +163,8 @@
   <data name="StringExtract_GetSubString_LengthError" xml:space="preserve">
     <value>截取长度过短，不应该再存在省略字符串</value>
     <comment>StringExtract_GetSubString_LengthError description</comment>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value>2</value>
   </data>
 </root>

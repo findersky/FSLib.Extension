@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.FishExtension.Resources;
 using System.Linq;
 using System.Text;
 
 namespace System
 {
+	using FSLib.Extension.FishExtension.Resources;
+
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	public static class FishValueExtension
 	{
@@ -343,16 +344,16 @@ namespace System
 		/// </summary>
 		/// <param name="value">要压缩的 <see cref="T:System.Int32"/></param>
 		/// <returns>压缩后的字符串</returns>
-		public static string CompressToString(this int value)
+		public static string CompressToString(this uint value)
 		{
 			var map = new List<char>();
-			var step = _numberCode.Length;
+			var step = (uint)_numberCode.Length;
 
 			while (value > 0)
 			{
 				var digit = value % step;
 				value = (value - digit) / step;
-				map.Add(_numberCode[digit]);
+				map.Add(_numberCode[(int)digit]);
 			}
 
 			return new string(map.Reverse<char>().ToArray());
