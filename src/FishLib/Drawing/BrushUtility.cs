@@ -1,9 +1,10 @@
-﻿using System;
+﻿#if NET20 || NET35 || NET40 || NET45 || NET46 || NET47
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace System.FishLib.Drawing
+namespace FSLib.Extension.Drawing
 {
 	using System.Drawing;
 	using System.Reflection;
@@ -28,7 +29,7 @@ namespace System.FishLib.Drawing
 				{
 					if (!_brushes.TryGetValue(colorName, out brush))
 					{
-						var type = typeof (Brushes);
+						var type = typeof(Brushes);
 						var p = type.GetProperty(colorName.ToString(), BindingFlags.Static | BindingFlags.Public);
 						if (p != null)
 						{
@@ -44,3 +45,4 @@ namespace System.FishLib.Drawing
 		}
 	}
 }
+#endif

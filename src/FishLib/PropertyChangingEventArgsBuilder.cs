@@ -1,5 +1,7 @@
-﻿namespace System.FishLib
+﻿namespace FSLib.Extension
 {
+	using System;
+
 	public class PropertyChangingEventArgsBuilder
 	{
 		/// <summary>

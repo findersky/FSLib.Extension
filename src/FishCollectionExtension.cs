@@ -10,7 +10,7 @@ namespace System
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	public static class FishCollectionExtension
 	{
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 		#region NameValueCollection
 
 		/// <summary>
@@ -531,6 +531,71 @@ namespace System
 			eles.ForEach(queue.Enqueue);
 		}
 
+		/// <summary>
+		/// 获得指定序列中所有长度（从1到序列长度）的排列组合结果
+		/// </summary>
+		/// <typeparam name="T[]">序列类型</typeparam>
+		/// <param name="src">源序列</param>
+		/// <returns>
+		/// 所有长度（从1到序列长度）的排列组合结果
+		/// </returns>
+		public static IEnumerable<T[]> GetAllCombinations<T>(this IEnumerable<T> src)
+		{
+			var list = src.ToArray();
+			var pos = Enumerable.Range(0, list.Length).ToArray();
+
+			for (int i = 0; i <= pos.Length; i++)
+			{
+				foreach (var ret in GetAllCombinations(pos, i, null))
+					yield return ret.Select(s => list[s]).ToArray();
+			}
+		}
+
+
+		/// <summary>
+		/// 获得指定序列中指定长度的排列组合结果
+		/// </summary>
+		/// <typeparam name="T[]">序列类型</typeparam>
+		/// <param name="src">源序列</param>
+		/// <param name="length">添加要求的结果序列长度</param>
+		/// <returns>
+		/// 指定长度的排列组合结果
+		/// </returns>
+		public static IEnumerable<T[]> GetAllCombinations<T>(this IEnumerable<T> src, int length)
+		{
+			var list = src.ToArray();
+			var pos = Enumerable.Range(0, list.Length).ToArray();
+
+			foreach (var ret in GetAllCombinations(pos, length, null))
+				yield return ret.Select(s => list[s]).ToArray();
+		}
+
+		static IEnumerable<int[]> GetAllCombinations(int[] src, int length, HashSet<int> pos)
+		{
+			if (pos == null)
+				pos = new HashSet<int>();
+
+			for (int i = 0; i < src.Length; i++)
+			{
+				if (!pos.Add(i))
+					continue;
+
+				if (pos.Count < length)
+				{
+					foreach (var ret in GetAllCombinations(src, length, pos))
+					{
+						yield return ret;
+					}
+				}
+				else
+				{
+					yield return pos.ToArray();
+				}
+
+				pos.Remove(i);
+			}
+		}
+
 		#endregion
 
 		#region HashSet`1
@@ -547,6 +612,155 @@ namespace System
 			if (hashset.Contains(obj)) return false;
 			hashset.Add(obj);
 			return true;
+		}
+
+		#endregion
+
+		#region Deconstruct
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first)
+		{
+			first = source.First();
+		}
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first, out T second)
+		{
+			var args = source.Take(2).ToArray();
+			first = args[0];
+			second = args[1];
+		}
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first, out T second, out T third)
+		{
+			var args = source.Take(2).ToArray();
+			first = args[0];
+			second = args[1];
+			third = args[2];
+		}
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first, out T second, out T third, out T forth)
+		{
+			var args = source.Take(2).ToArray();
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+		}
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first, out T second, out T third, out T forth, out T fifth)
+		{
+			var args = source.Take(2).ToArray();
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+		}
+
+		public static void Deconstruct<T>(this IEnumerable<T> source, out T first, out T second, out T third, out T forth, out T fifth, out T sixth)
+		{
+			var args = source.Take(2).ToArray();
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+			sixth = args[5];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first)
+		{
+			first = args[0];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first, out T second)
+		{
+			first = args[0];
+			second = args[1];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first, out T second, out T third)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first, out T second, out T third, out T forth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first, out T second, out T third, out T forth, out T fifth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+		}
+
+		public static void Deconstruct<T>(this T[] args, out T first, out T second, out T third, out T forth, out T fifth, out T sixth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+			sixth = args[5];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first)
+		{
+			first = args[0];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first, out T second)
+		{
+			first = args[0];
+			second = args[1];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first, out T second, out T third)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first, out T second, out T third, out T forth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first, out T second, out T third, out T forth, out T fifth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+		}
+
+		public static void Deconstruct<T>(this IList<T> args, out T first, out T second, out T third, out T forth, out T fifth, out T sixth)
+		{
+			first = args[0];
+			second = args[1];
+			third = args[2];
+			forth = args[3];
+			fifth = args[4];
+			sixth = args[5];
+		}
+		public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> kvp, out TKey key, out TValue value)
+		{
+			key = kvp.Key;
+			value = kvp.Value;
 		}
 
 		#endregion

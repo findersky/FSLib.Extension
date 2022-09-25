@@ -1,4 +1,4 @@
-namespace System.FishLib
+namespace FSLib.Extension
 {
 	using System.Linq;
 	using System.Reflection;
@@ -24,6 +24,11 @@ namespace System.FishLib
 		/// 值
 		/// </summary>
 		public virtual object Value { get; protected set; }
+
+		/// <summary>
+		/// 是否是标记位
+		/// </summary>
+		public bool IsFlag { get; internal set; }
 
 		/// <summary>
 		/// 获得相关联的类型
@@ -68,7 +73,7 @@ namespace System.FishLib
 		public DescriptionGeneric(string displayName, string descriptionText, object value, FieldInfo field)
 			: base(displayName, descriptionText, value, field)
 		{
-			
+
 		}
 
 		/// <summary>

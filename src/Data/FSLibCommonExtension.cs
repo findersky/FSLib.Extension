@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET20 || NET35 || NET40 || NET45 || NET46 || NET47
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace System.Data
 
 	using Configuration;
 
-	using FishExtension;
+	using FSLib.Extension;
 
 	/// <summary>
 	/// 通用数据库的扩展方法
@@ -318,3 +319,4 @@ namespace System.Data
 
 	}
 }
+#endif

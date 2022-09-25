@@ -9,7 +9,7 @@ namespace System.Windows.Forms
 {
 	using Drawing;
 
-	using FishExtension;
+	using FSLib.Extension;
 
 	using Linq.Expressions;
 	using Reflection;
@@ -49,6 +49,25 @@ namespace System.Windows.Forms
 			control.Location = loc;
 
 			return control;
+		}
+
+		/// <summary>
+		/// 将控件尺寸设置为期望的尺寸
+		/// </summary>
+		/// <param name="control"></param>
+		/// <returns></returns>
+		public static Size SetToPreferredSize(this Control control)
+		{
+			var size = control.PreferredSize;
+			if (size.IsEmpty)
+			{
+				control.CreateControl();
+				size = control.PreferredSize;
+			}
+
+			control.Size = size;
+
+			return size;
 		}
 
 		/// <summary>
@@ -532,17 +551,50 @@ namespace System.Windows.Forms
 		/// <param name="source"></param>
 		/// <param name="controlExpression"></param>
 		/// <param name="propertyExpression"></param>
-		public static void AddDataBinding<TControl, TSource, TValue>(this TControl control, TSource source, Expression<Func<TControl, TValue>> controlExpression, Expression<Func<TSource, TValue>> propertyExpression) where TControl : Control
+		/// <param name="formatEnabled"></param>
+		/// <param name="updateMode"></param>
+		/// <param name="nullValue"></param>
+		/// <param name="formatString"></param>
+		/// <param name="formatProvider"></param>
+		public static void AddDataBinding<TControl, TSource, TValue>(this TControl control,
+			TSource source,
+			Expression<Func<TControl, TValue>> controlExpression,
+			Expression<Func<TSource, TValue>> propertyExpression,
+			bool formatEnabled = true,
+			DataSourceUpdateMode updateMode = DataSourceUpdateMode.OnPropertyChanged,
+			object nullValue = null,
+			string formatString = null,
+			IFormatProvider formatProvider = null
+			) where TControl : Control
 		{
 			if (control == null || controlExpression == null || propertyExpression == null)
 				return;
 
-			var controlPropertyName = controlExpression.GetExpressionAccessedMemberName();
-			var sourcePropertyName = propertyExpression.GetExpressionAccessedMemberName();
+			string GetExpressionAccessedMemberName<TSource, TValue>(Expression<Func<TSource, TValue>> expression)
+			{
+				if (expression == null)
+					return null;
+
+				var expressionBody = expression.Body;
+
+				if (expressionBody is UnaryExpression ue && (ue.NodeType == ExpressionType.Convert || ue.NodeType == ExpressionType.ConvertChecked))
+				{
+					expressionBody = ue.Operand;
+				}
+
+				if (expressionBody.NodeType == ExpressionType.MemberAccess && (expressionBody as MemberExpression).Member is PropertyInfo)
+					return ((expressionBody as MemberExpression).Member as PropertyInfo).Name;
+
+				return null;
+			}
+
+			var controlPropertyName = GetExpressionAccessedMemberName(controlExpression);
+			var sourcePropertyName = GetExpressionAccessedMemberName(propertyExpression);
+
 			if (string.IsNullOrEmpty(sourcePropertyName) || string.IsNullOrEmpty(controlPropertyName))
 				return;
 
-			control.DataBindings.Add(controlPropertyName, source, sourcePropertyName);
+			control.DataBindings.Add(controlPropertyName, source, sourcePropertyName, formatEnabled, updateMode, nullValue, formatString, formatProvider);
 		}
 
 		/// <summary>
@@ -579,7 +631,7 @@ namespace System.Windows.Forms
 		/// <returns></returns>
 		public static bool IsHandleAvailable(this Control control)
 		{
-			return control != null && !(control.IsDisposed || control.Disposing);
+			return control != null && !(control.IsDisposed || control.Disposing) && control.IsHandleCreated;
 		}
 
 		/// <summary>
@@ -751,9 +803,7 @@ namespace System.Windows.Forms
 		{
 			return (obj, ev) =>
 			{
-				if (control.IsDisposed)
-					action(obj, ev);
-				if (control == null || !control.InvokeRequired)
+				if (control?.IsDisposed != false || !control.InvokeRequired)
 					action(obj, ev);
 				else
 					control.Invoke(action, obj, ev);
@@ -770,9 +820,7 @@ namespace System.Windows.Forms
 		{
 			return (ev) =>
 			{
-				if (control.IsDisposed)
-					action(ev);
-				if (control == null || !control.InvokeRequired)
+				if (control?.IsDisposed != false || !control.InvokeRequired)
 					action(ev);
 				else
 					control.Invoke(action, ev);

@@ -1,4 +1,4 @@
-namespace System.FishLib
+namespace FSLib.Extension
 {
 	using System;
 	using System.Collections.Generic;

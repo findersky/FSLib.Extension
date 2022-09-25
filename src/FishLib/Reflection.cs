@@ -1,19 +1,17 @@
-﻿namespace System.FishLib
+﻿namespace FSLib.Extension
 {
 	using System;
+	using System.Globalization;
 	using System.Linq;
+	using System.Linq.Expressions;
 	using System.Reflection;
-
-	using Globalization;
-
-	using Linq.Expressions;
 
 	/// <summary>
 	/// 反射辅助类
 	/// </summary>
 	public static class Reflection
 	{
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 		/// <summary>
 		/// 尝试加载程序集，如果加载失败，则返回NULL
 		/// </summary>
@@ -33,7 +31,7 @@
 
 #endif
 
-#if NET40
+#if NET40 || NET45 || NET46 || NET47
 		/// <summary>
 		/// 动态构造委托
 		/// </summary>

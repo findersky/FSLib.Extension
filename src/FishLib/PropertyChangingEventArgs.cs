@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace System.FishLib
+namespace FSLib.Extension
 {
 	/// <summary>
 	/// 属性正在变化事件类
@@ -11,6 +11,8 @@ namespace System.FishLib
 	/// <typeparam name="T"></typeparam>
 	public class PropertyChangingEventArgs<T> : EventArgs
 	{
+		public string PropertyName { get; set; }
+
 		/// <summary>
 		/// 初始化 <see cref="PropertyChangingEventArgs{T}"/> 类的新实例。
 		/// </summary>

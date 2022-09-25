@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 using System.Drawing;
 using System.Drawing.Imaging;
 #endif
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace System
 {
-	using FishExtension;
+	using ComponentModel;
+
+	using Linq.Expressions;
 
 	/// <summary>
 	/// 对象扩展
@@ -22,7 +21,8 @@ namespace System
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	public static class FishObjectExtension
 	{
-#if !NET_CORE
+#if NETFRAMEWORK
+
 		#region System.Drawing.Image
 
 		/// <summary>
@@ -79,6 +79,25 @@ namespace System
 		}
 
 		/// <summary>
+		/// 使用指定的图片质量将图片保存到指定位置为JPEG图片
+		/// </summary>
+		/// <param name="image">要保存的图片</param>
+		/// <param name="quality">质量</param>
+		public static MemoryStream SaveAsJpeg(this Image image, int quality = 90)
+		{
+			EncoderParameters parameters = new EncoderParameters(1);
+			parameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, ((long)quality));
+
+			ImageCodecInfo myImageCodecInfo = (from p in ImageCodecInfo.GetImageEncoders() where p.MimeType == "image/jpeg" select p).Single<ImageCodecInfo>();
+			var ms = new MemoryStream();
+			image.Save(ms, myImageCodecInfo, parameters);
+
+			ms.Seek(0, SeekOrigin.Begin);
+
+			return ms;
+		}
+
+		/// <summary>
 		/// 由原始的小图创建一个居中的大图
 		/// </summary>
 		/// <param name="image">原始图像</param>
@@ -130,7 +149,7 @@ namespace System
 
 		#region Reflection
 
-#if NET_CORE
+#if NETSTANDARD1_6_1 || NETSTANDARD2_0 || NETSTANDARD3_0
 		internal static TypeInfo GetTypeInfo(Type type) => type.GetTypeInfo();
 #else
 		internal static Type GetTypeInfo(Type type) => type;
@@ -229,7 +248,7 @@ namespace System
 			return System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
 		}
 
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 
 		/// <summary>
 		/// 对类型列表进行过滤。
@@ -273,7 +292,7 @@ namespace System
 		}
 
 #endif
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 
 		/// <summary>
 		/// 获得类的完整名称（含程序集名称）
@@ -316,7 +335,7 @@ namespace System
 			return type.GetCustomAttributes(typeof(T), false).Cast<T>().ToArray();
 		}
 
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 
 		/// <summary>
 		/// 获得程序集是否是调试版本编译的
@@ -625,282 +644,6 @@ namespace System
 
 		#endregion
 
-		#region Stream
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int16"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int16"/></returns>
-		public static ushort ReadUInt16(this System.IO.Stream stream)
-		{
-			return BitConverter.ToUInt16(stream.ReadBuffer(2), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int32"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int32"/></returns>
-		public static uint ReadUInt32(this Stream stream)
-		{
-			return BitConverter.ToUInt32(stream.ReadBuffer(4), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int64"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int64"/></returns>
-		public static ulong ReadUInt64(this Stream stream)
-		{
-			return BitConverter.ToUInt64(stream.ReadBuffer(8), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int16"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int16"/></returns>
-		public static short ReadInt16(this System.IO.Stream stream)
-		{
-			return BitConverter.ToInt16(stream.ReadBuffer(2), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int32"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int32"/></returns>
-		public static int ReadInt32(this Stream stream)
-		{
-			return BitConverter.ToInt32(stream.ReadBuffer(4), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int64"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int64"/></returns>
-		public static long ReadInt64(this Stream stream)
-		{
-			return BitConverter.ToInt64(stream.ReadBuffer(8), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个 <see cref="T:System.Int64"/>
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <returns>读取的 <see cref="T:System.Int64"/></returns>
-		public static double ReadDouble(this Stream stream)
-		{
-			return BitConverter.ToDouble(stream.ReadBuffer(sizeof(double)), 0);
-		}
-
-		/// <summary>
-		/// 从流中读入一个缓冲数组
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <param name="length">读取的字节长度</param>
-		/// <param name="lengthRequired">是否要求指定的字节数，如果读取不到，则抛出异常</param>
-		/// <returns>缓冲数组</returns>
-		public static byte[] ReadBuffer(this Stream stream, int length, bool lengthRequired = true)
-		{
-			var count = 0;
-
-
-			var buffer = stream.ReadBuffer(length, out count);
-			if (count < length && lengthRequired)
-				throw new EndOfStreamException();
-
-			return buffer;
-		}
-
-		/// <summary>
-		/// 从流中读入一个缓冲数组
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <param name="length">读取的字节长度</param>
-		/// <param name="readedBytesCount">返回已经读取到的长度</param>
-		/// <returns>缓冲数组</returns>
-		public static byte[] ReadBuffer(this Stream stream, int length, out int readedBytesCount)
-		{
-			var buffer = new byte[length];
-			var count = 0;
-			readedBytesCount = 0;
-
-			while (readedBytesCount < length && (count = stream.Read(buffer, readedBytesCount, buffer.Length - readedBytesCount)) > 0)
-			{
-				readedBytesCount += count;
-			}
-
-			return buffer;
-		}
-
-		/// <summary>
-		/// 从流中读入一个缓冲数组
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <param name="buffer">缓冲数组</param>
-		/// <returns>缓冲数组</returns>
-		[Obsolete("此函数没有很大的意义，将会被移除。This method will be removed soon due to no means.")]
-		public static byte[] FillBuffer(this Stream stream, byte[] buffer)
-		{
-			if (stream.Read(buffer, 0, buffer.Length) != buffer.Length)
-			{
-				throw new Exception();
-			}
-
-			return buffer;
-		}
-
-		/// <summary>
-		/// 读取所有的数据到内存流中
-		/// </summary>
-		/// <param name="stream">要读取的流</param>
-		/// <param name="readBufferSize">读取的缓冲区长度，默认为 4KB</param>
-		/// <returns>包含所有数据的 <see cref="MemoryStream"/> </returns>
-		[CanBeNull]
-		public static MemoryStream ReadToEnd([NotNull] this Stream stream, int readBufferSize = 0x400)
-		{
-			if (!stream.CanRead)
-				return null;
-
-			var end = stream as MemoryStream;
-			if (end != null)
-				return end;
-
-			var ms = new MemoryStream();
-			var buffer = new byte[readBufferSize];
-			var count = 0;
-			while ((count = stream.Read(buffer, 0, buffer.Length)) > 0)
-				ms.Write(buffer, 0, count);
-			ms.Flush();
-			ms.Seek(0, SeekOrigin.Begin);
-
-			return ms;
-		}
-
-
-		/// <summary>
-		/// 压缩原始流
-		/// </summary>
-		/// <param name="stream">要写入的目标流</param>
-		/// <returns>供写入的压缩流</returns>
-		public static Stream Zip(this Stream stream)
-		{
-			return new System.IO.Compression.GZipStream(stream, CompressionMode.Compress);
-		}
-
-		/// <summary>
-		/// 解压缩原始流
-		/// </summary>
-		/// <param name="stream">供读取的压缩流</param>
-		/// <returns>供读取的解压缩流</returns>
-		public static Stream UnZip(this Stream stream)
-		{
-			return new GZipStream(stream, CompressionMode.Decompress);
-		}
-
-		/// <summary>
-		/// 获得当前流位置的显示字符串格式
-		/// </summary>
-		/// <param name="stream"></param>
-		/// <returns></returns>
-		public static string GetPositionString(this Stream stream)
-		{
-			return string.Format("0x{0:X8}", stream.Position);
-		}
-
-		/// <summary>
-		/// 将指定的缓冲数组全部写入流中
-		/// </summary>
-		/// <param name="stream">目标流</param>
-		/// <param name="buffer">缓冲数组</param>
-		public static T Write<T>(this T stream, byte[] buffer) where T : Stream
-		{
-			stream.Write(buffer, 0, buffer.Length);
-			return stream;
-		}
-
-		/// <summary>
-		/// 将指定的缓冲数组全部写入流中
-		/// </summary>
-		/// <param name="stream">目标流</param>
-		/// <param name="buffer">缓冲数组</param>
-		public static T Write<T>(this T stream, IEnumerable<byte> buffer) where T : Stream
-		{
-			stream.Write(buffer.ToArray());
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, int value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, uint value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, short value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, ushort value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, long value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		/// <summary>
-		/// 将目标值写入流中
-		/// </summary>
-		/// <param name="stream">当前流</param>
-		/// <param name="value">值</param>
-		public static T Write<T>(this T stream, ulong value) where T : Stream
-		{
-			stream.Write(BitConverter.GetBytes(value));
-			return stream;
-		}
-
-		#endregion
 
 		#region 其它
 
@@ -984,6 +727,7 @@ namespace System
 
 
 		#endregion
+
 		/// <summary>
 		/// True if object is value type.
 		/// </summary>
@@ -1008,6 +752,84 @@ namespace System
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// 添加一个支持属性过滤的事件捕捉句柄
+		/// </summary>
+		/// <typeparam name="TObj">目标类型</typeparam>
+		/// <typeparam name="TProp">属性类型</typeparam>
+		/// <param name="obj">对象</param>
+		/// <param name="exp">表达式</param>
+		/// <param name="handler">事件</param>
+		/// <param name="host">绑定的目标对象，如果支持Disposed事件的话，将会在触发时自动清理挂载</param>
+		/// <returns>返回一个可以用来取消挂载事件的 <see cref="Action"/></returns>
+		public static Action AddPropertyChangingEventHandler<TObj, TProp>(this TObj obj, Expression<Func<TObj, TProp>> exp, EventHandler<PropertyChangingEventArgs> handler, object host = null)
+			where TObj : INotifyPropertyChanging
+		{
+			var propName = exp.GetExpressionAccessedMemberName();
+			if (propName.IsNullOrEmpty())
+				throw new InvalidOperationException("Unable to figure out which property.");
+
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
+
+			var callback = new PropertyChangingEventHandler((sender, e) =>
+			{
+				if (e.PropertyName == propName)
+					handler(sender, e);
+			});
+			Action unsub = () => obj.PropertyChanging -= callback;
+			var dv = host?.GetType().GetTypeInfo().GetEvent("Disposed");
+			if (dv != null)
+			{
+				dv.AddEventHandler(host, new EventHandler(((sender, args) =>
+				{
+					unsub();
+				})));
+			}
+
+			return unsub;
+		}
+
+		/// <summary>
+		/// 添加一个支持属性过滤的事件捕捉句柄
+		/// </summary>
+		/// <typeparam name="TObj">目标类型</typeparam>
+		/// <typeparam name="TProp">属性类型</typeparam>
+		/// <param name="obj">对象</param>
+		/// <param name="exp">表达式</param>
+		/// <param name="handler">事件</param>
+		/// <param name="host">绑定的目标对象，如果支持Disposed事件的话，将会在触发时自动清理挂载</param>
+		/// <returns>返回一个可以用来取消挂载事件的 <see cref="Action"/></returns>
+		public static Action AddPropertyChangedEventHandler<TObj, TProp>(this TObj obj, Expression<Func<TObj, TProp>> exp, EventHandler<PropertyChangedEventArgs> handler, object host = null)
+			where TObj : INotifyPropertyChanged
+		{
+			var propName = exp.GetExpressionAccessedMemberName();
+			if (propName.IsNullOrEmpty())
+				throw new InvalidOperationException("Unable to figure out which property.");
+
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
+
+			var callback = new PropertyChangedEventHandler((sender, e) =>
+			{
+				if (e.PropertyName == propName)
+					handler(sender, e);
+			});
+			obj.PropertyChanged += callback;
+
+			Action unsub = () => obj.PropertyChanged -= callback;
+			var dv = host?.GetType().GetTypeInfo().GetEvent("Disposed");
+			if (dv != null)
+			{
+				dv.AddEventHandler(host, new EventHandler(((sender, args) =>
+				{
+					unsub();
+				})));
+			}
+
+			return unsub;
 		}
 	}
 

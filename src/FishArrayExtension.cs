@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-#if !NET_CORE
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
 using System.Drawing;
 using System.ComponentModel;
 #endif
@@ -14,8 +14,8 @@ namespace System
 	/// <summary>
 	/// 对数组的扩展方法
 	/// </summary>
-#if !NET_CORE
-[EditorBrowsable(EditorBrowsableState.Never), Browsable(false)]
+#if !NETSTANDARD1_6_1 && !NETSTANDARD2_0 && !NETSTANDARD3_0
+	[EditorBrowsable(EditorBrowsableState.Never), Browsable(false)]
 #endif
 	public static class FishArrayExtension
 	{
@@ -232,13 +232,11 @@ namespace System
 			for (var i = startIndex; i <= limitLen; i++)
 			{
 				var j = 0;
-				for (; j < len; j++)
+				while (comparer.Equals(array[i + j], sequence[j]) && ++j <= len)
 				{
-					if (!comparer.Equals(array[i], sequence[j]))
-						break;
+					if (j == len)
+						return i;
 				}
-				if (j == len)
-					return i;
 			}
 
 			return -1;
@@ -263,13 +261,11 @@ namespace System
 			for (var i = startIndex; i <= limitLen; i++)
 			{
 				var j = 0;
-				for (; j < len; j++)
+				while (array[j + i] == sequence[j] && ++j <= len)
 				{
-					if (array[i] != sequence[j])
-						break;
+					if (j == len)
+						return i;
 				}
-				if (j == len)
-					return i;
 			}
 
 			return -1;
@@ -294,13 +290,11 @@ namespace System
 			for (var i = startIndex; i <= limitLen; i++)
 			{
 				var j = 0;
-				for (; j < len; j++)
+				while (array[j + i] == sequence[j] && ++j <= len)
 				{
-					if (array[i] != sequence[j])
-						break;
+					if (j == len)
+						return i;
 				}
-				if (j == len)
-					return i;
 			}
 
 			return -1;
@@ -325,13 +319,11 @@ namespace System
 			for (var i = startIndex; i <= limitLen; i++)
 			{
 				var j = 0;
-				for (; j < len; j++)
+				while (array[j + i] == sequence[j] && ++j <= len)
 				{
-					if (array[i] != sequence[j])
-						break;
+					if (j == len)
+						return i;
 				}
-				if (j == len)
-					return i;
 			}
 
 			return -1;
@@ -350,7 +342,7 @@ namespace System
 			return Convert.ToBase64String(array);
 		}
 
-#if !NET_CORE
+#if NETFRAMEWORK
 
 		/// <summary>
 		/// 将指定的字节数组转换为Image图像对象
@@ -372,7 +364,7 @@ namespace System
 					return img;
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return null;
 			}

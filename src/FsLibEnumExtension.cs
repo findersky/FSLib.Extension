@@ -4,8 +4,11 @@ using System.ComponentModel;
 // ReSharper disable once CheckNamespace
 namespace System
 {
-	using FishLib;
 	using System.Reflection;
+
+	using FSLib.Extension;
+
+	using Linq;
 
 	/// <summary>
 	/// 枚举的扩展
@@ -24,7 +27,7 @@ namespace System
 		/// <returns></returns>
 		public static List<Description> GetEnumDescription(this Type type)
 		{
-#if NET_CORE
+#if NETSTANDARD1_6_1 || NETSTANDARD2_0 || NETSTANDARD3_0
 			var typeInfo = type?.GetTypeInfo();
 #else
 			var typeInfo = type;
@@ -38,6 +41,8 @@ namespace System
 				{
 					if (result == null)
 					{
+						var isFlag = typeInfo.GetCustomAttributes(typeof(FlagsAttribute), true).Any();
+
 						var fields = typeInfo.GetFields();
 						result = new List<Description>(fields.Length);
 
@@ -51,6 +56,7 @@ namespace System
 							//创建泛型类
 							var m = typeof(DescriptionGeneric<>).MakeGenericType(type);
 							var desc = (Description)Activator.CreateInstance(m, typeWrapper.DisplayName, typeWrapper.Description, value, f);
+							desc.IsFlag = isFlag;
 
 							result.Add(desc);
 						}
@@ -74,6 +80,8 @@ namespace System
 			if (type.BaseType != typeof(Enum))
 				throw new InvalidOperationException();
 
+			var isFlag = type.GetCustomAttributes(typeof(FlagsAttribute), true).Any();
+
 			var fields = type.GetFields();
 			var list = new List<DescriptionGeneric<T>>(fields.Length);
 
@@ -84,7 +92,7 @@ namespace System
 				var value = f.GetRawConstantValue();
 				var typeWrapper = (MemberDescriptorBase)f;
 
-				list.Add(new DescriptionGeneric<T>(typeWrapper.DisplayName, typeWrapper.Description, value, f));
+				list.Add(new DescriptionGeneric<T>(typeWrapper.DisplayName, typeWrapper.Description, value, f) { IsFlag = isFlag });
 			}
 
 			return list;

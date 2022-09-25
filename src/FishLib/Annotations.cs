@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace System.FishExtension
+namespace FSLib.Extension
 {
 #pragma warning disable 1591
 	// ReSharper disable UnusedMember.Global
